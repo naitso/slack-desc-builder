@@ -20,7 +20,7 @@ Output
 
 The output file will be like this:
 
-
+-------------------------------------------------------------------------------
 # HOW TO EDIT THIS FILE:
 # The "handy ruler" below makes it easier to edit a package description. Line
 # up the first '|' above the ':' following the base package name, and the '|' 
@@ -41,3 +41,4 @@ esempio: ad eos mercatores saepe commeant atque ea quae ad effeminandos
 esempio:
 esempio: (http://www.esempio.org)
 
+-------------------------------------------------------------------------------
