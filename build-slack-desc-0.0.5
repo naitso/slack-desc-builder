@@ -1,0 +1,139 @@
+#!/bin/bash
+
+##################################################################################
+#
+# File info:
+# This script build for you a "slack-desk" file. The slack-desk file is used into
+# slackware packages and contain software infos.
+# 
+# Autor: Cristian Vedovato a.k.a. naitso 
+#
+# Thanks to Marco Pessotto a.k.a. melmothX
+# Thanks to www.slacky.eu for wiki pages
+#
+# Revision:
+# 20090316 - Creation 
+# 20091110 - Little update, thanks to ulisse89
+# 20140205 - Put it on GitHub
+# 
+##################################################################################
+
+# Check wrong arguments 
+if [ $# != 0 ]; then
+	clear
+	echo ""
+	echo "This script help you to build a slack-desc file."
+        echo "Run the script without arguments, and answer the questions."
+	echo "Warning, the package's description must be write or paste in only one row."
+	echo ""
+	exit 1
+fi
+
+# clear screen
+clear
+CWD=$(pwd)
+# Set file name
+FILE=slack-desc
+if [ -e $FILE ]; then
+	#rm $CWD/$FILE
+	echo "slack-desc on $CWD alredy exist! Overwrite?"
+	echo "Type Y/N or Q to quit"
+	read R0
+	if [ "$R0" == "N" ] || [ "$R0" == "n" ] ; then
+		echo "This slack-desc become slack-desc.new"
+		FILE=$FILE.new
+	elif [ "$R0" == "Y" ] || [ "$R0" == "y" ] ; then
+		rm $CWD/$FILE
+	elif [ "$R0" == "Q" ] || [ "$R0" == "q" ] ; then
+		echo "Quit"
+		exit 0
+	else
+		echo "Wrong key!"
+		exit 0
+	fi
+fi
+# Begin question
+# 1^ Program Name
+echo ""
+echo "Write Package name, and press ENTER"
+echo ""
+read R1
+# Use only ascii characters: a-z e - o _
+# the SPACE will be replaced by -
+# and TAB removed
+NAME=$(echo "$R1" | sed -e "s/ /-/g" | sed -e "s/[ \t]//g")
+# 2^ Short desctiption
+echo ""
+echo "Write a very short package description and press ENTER"
+echo "(ex: Free FTP client)"
+echo ""
+read R2 
+# 3^ Complete description 
+echo ""
+echo "Write Package description and press ENTER"
+echo "(ascii only no fancy character: a-z and - or _)"
+echo ""
+read R3
+# 4^ URL Homepage
+echo ""
+echo "Write Homepage and press ENTER"
+echo "(ex:http://www.example.org)"
+echo ""
+read R4
+
+#build slack-desC
+NUM=0
+SPACE=$(echo "$NAME" | sed -e "s/./ /g")
+RULER="|----hardy-ruler----"
+N_RULER=$(echo -n "$RULER" | wc -m)
+CHA=$(echo -n "$NAME" | wc -m)
+# Max row for description 
+MAX_ROW=7
+# limit columns 
+COL=$[77-$CHA]
+if [ $CHA -gt "40" ]; then
+	echo "Name too long, please change it"
+	exit 1
+fi
+
+while [ $N_RULER -lt $[$COL+1] ]; do
+	LINE=$LINE$(echo -n "-")
+	N_RULER=$[N_RULER+1]
+done
+
+# slack-desk header	
+cat > $FILE <<END
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description. Line
+# up the first '|' above the ':' following the base package name, and the '|' 
+# on the right side marks the last column you can put a character in. You must
+# make exactly 11 lines for the formatting to be correct. It's also customary
+# to leave one space after the ':'.
+
+$SPACE$RULER$LINE|
+END
+# limit description for slack-desc
+ROW=$(echo $R3 | fmt -w $COL | sed -e "s/^/$NAME: &/ " | wc -l)
+if [ $ROW -ge "$MAX_ROW" ]; then
+	ROW=$MAX_ROW
+fi
+MAX=$[$MAX_ROW-$ROW]
+
+# Add package-name and shot description to slack-desc file, (all in one line) 
+echo "$NAME ($R2)" | fmt -w $COL | sed -n -e "1,1s/^/$NAME: &/p " >> $CWD/$FILE
+# Add a empty row
+echo $NAME: >> $CWD/$FILE
+# Add description max 7 rows
+echo $R3 | fmt -w $COL | sed -n -e "1,7s/^/$NAME: &/p " >> $CWD/$FILE
+# Add a empty row before URL homepage
+echo $NAME: >> $CWD/$FILE
+# Add URL homepage
+echo "$NAME: ($R4)" >> $CWD/$FILE
+# If the rows are minus than 11, add empty row
+while [ $NUM -lt $MAX ]; do
+	echo "$NAME:" >> $CWD/$FILE
+	NUM=$[NUM+1]
+done
+
+#end exit
+exit 0
